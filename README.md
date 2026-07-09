@@ -1,572 +1,526 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>أخبار السوق الكروي</title>
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
-  <!-- Font Awesome (أيقونات) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>دينار - منصة العملات الرقمية</title>
+    <!-- Chart.js مجاني -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background-color: #0b0e14;
-      color: #f0f3f8;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 16px 40px;
-    }
+        body {
+            background: #0b0e1a;
+            color: #e0e4f0;
+            padding: 20px;
+        }
 
-    .container {
-      max-width: 800px;
-      width: 100%;
-    }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
 
-    /* Header و البحث */
-    .header {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      margin-bottom: 28px;
-    }
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: #141a2b;
+            padding: 15px 25px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
 
-    .main-title {
-      font-size: 2.2rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 0 20px rgba(253, 160, 133, 0.2);
-      text-align: center;
-      line-height: 1.2;
-    }
+        .logo h1 {
+            font-size: 28px;
+            color: #f5b041;
+            letter-spacing: 1px;
+        }
 
-    .search-box {
-      display: flex;
-      align-items: center;
-      background: #1e2430;
-      border-radius: 60px;
-      padding: 6px 18px 6px 6px;
-      border: 1px solid #2e3748;
-      transition: border 0.2s;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-    }
+        .logo span {
+            color: #fff;
+            font-weight: 300;
+        }
 
-    .search-box:focus-within {
-      border-color: #f6d365;
-      box-shadow: 0 0 0 3px rgba(246, 211, 101, 0.2);
-    }
+        .prices {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            font-size: 14px;
+        }
 
-    .search-box i {
-      color: #8896ab;
-      font-size: 1.1rem;
-      margin-left: 8px;
-    }
+        .price-item {
+            background: #1e263b;
+            padding: 6px 14px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-    .search-box input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      padding: 14px 0;
-      color: #f0f3f8;
-      font-size: 1rem;
-      font-family: 'Tajawal', sans-serif;
-      outline: none;
-    }
+        .price-item .coin {
+            font-weight: 600;
+        }
 
-    .search-box input::placeholder {
-      color: #6b7a91;
-      font-weight: 400;
-    }
+        .green {
+            color: #2ecc71;
+        }
+        .red {
+            color: #e74c3c;
+        }
 
-    /* بطاقات الأخبار (عرض الأخبار) */
-    .news-section {
-      background: #141a24;
-      border-radius: 28px;
-      padding: 20px 16px;
-      margin-bottom: 30px;
-      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
-      border: 1px solid #232b39;
-    }
+        .btn-all {
+            background: #2a334a;
+            padding: 8px 18px;
+            border-radius: 30px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .btn-all:hover {
+            background: #3a455f;
+        }
 
-    .news-section h2 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #f6d365;
-      margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        /* Grid */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
 
-    .news-item {
-      background: #1c2432;
-      border-radius: 18px;
-      padding: 16px 18px;
-      margin-bottom: 14px;
-      border-right: 4px solid #f6d365;
-      transition: background 0.15s;
-    }
+        .card {
+            background: #141a2b;
+            border-radius: 24px;
+            padding: 22px 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            transition: 0.2s;
+        }
 
-    .news-item:last-child {
-      margin-bottom: 0;
-    }
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #f5b041;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    .news-item h3 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: #ffffff;
-    }
+        .card h3 i {
+            color: #f1c40f;
+        }
 
-    .news-item p {
-      color: #b6c4db;
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
+        /* newsletter */
+        .newsletter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .newsletter input {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 40px;
+            border: none;
+            background: #1e263b;
+            color: #fff;
+            font-size: 14px;
+            min-width: 180px;
+        }
+        .newsletter input::placeholder {
+            color: #7a85a3;
+        }
+        .newsletter button {
+            background: #f5b041;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #0b0e1a;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .newsletter button:hover {
+            background: #e6a035;
+        }
 
-    .news-meta {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 12px;
-      color: #7e8ca5;
-      font-size: 0.85rem;
-      border-top: 1px solid #2a3446;
-      padding-top: 10px;
-    }
+        .social-icons a {
+            color: #aab3d0;
+            margin-left: 12px;
+            font-size: 20px;
+            transition: 0.3s;
+        }
+        .social-icons a:hover {
+            color: #f5b041;
+        }
 
-    /* بوت المحادثة (Chatbot) */
-    .chatbot-wrapper {
-      background: #141a24;
-      border-radius: 28px;
-      padding: 20px 16px;
-      border: 1px solid #232b39;
-      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
-      margin-top: 8px;
-    }
+        /* stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .stat-box {
+            background: #1e263b;
+            padding: 14px 10px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .stat-box .number {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .stat-box .label {
+            font-size: 12px;
+            color: #8d98b9;
+            margin-top: 4px;
+        }
 
-    .chatbot-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
+        /* latest news */
+        .news-item {
+            background: #1a2236;
+            padding: 14px 18px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .news-item .tag {
+            background: #2a334a;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #f5b041;
+        }
+        .news-item .date {
+            color: #7a85a3;
+            font-size: 13px;
+        }
 
-    .chatbot-header i {
-      font-size: 1.8rem;
-      color: #f6d365;
-      background: #1e2636;
-      padding: 8px;
-      border-radius: 16px;
-    }
+        /* ICO / إدراج جديد */
+        .ico-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .ico-card {
+            background: #1e263b;
+            padding: 14px 12px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .ico-card .name {
+            font-weight: 600;
+        }
+        .ico-card .chain {
+            font-size: 12px;
+            color: #8d98b9;
+        }
+        .ico-card .amount {
+            color: #2ecc71;
+            font-weight: 600;
+        }
+        .ico-card .badge {
+            background: #2a334a;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            color: #f5b041;
+            display: inline-block;
+            margin-top: 4px;
+        }
 
-    .chatbot-header h2 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #f0f3f8;
-    }
+        /* chart wrapper */
+        .chart-wrapper {
+            margin-top: 20px;
+            background: #0f1525;
+            padding: 15px;
+            border-radius: 20px;
+            height: 200px;
+            position: relative;
+        }
+        .chart-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
 
-    .chatbot-header span {
-      background: #2d8a4e;
-      font-size: 0.7rem;
-      padding: 2px 12px;
-      border-radius: 40px;
-      color: white;
-      font-weight: 700;
-      margin-right: auto;
-    }
+        /* footer */
+        .footer {
+            text-align: center;
+            color: #5a6582;
+            font-size: 14px;
+            margin-top: 40px;
+            border-top: 1px solid #1e263b;
+            padding-top: 25px;
+        }
 
-    .chat-input-area {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .chat-input-row {
-      display: flex;
-      align-items: center;
-      background: #1e2430;
-      border-radius: 60px;
-      padding: 4px 4px 4px 18px;
-      border: 1px solid #2e3748;
-      transition: border 0.2s;
-    }
-
-    .chat-input-row:focus-within {
-      border-color: #f6d365;
-    }
-
-    .chat-input-row input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      padding: 14px 0;
-      color: #f0f3f8;
-      font-size: 1rem;
-      font-family: 'Tajawal', sans-serif;
-      outline: none;
-    }
-
-    .chat-input-row input::placeholder {
-      color: #6b7a91;
-    }
-
-    .chat-input-row button {
-      background: linear-gradient(145deg, #f6d365, #fda085);
-      border: none;
-      color: #0b0e14;
-      font-weight: 700;
-      padding: 10px 22px;
-      border-radius: 60px;
-      cursor: pointer;
-      font-family: 'Tajawal', sans-serif;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: transform 0.1s, box-shadow 0.2s;
-      box-shadow: 0 6px 14px rgba(253, 160, 133, 0.25);
-    }
-
-    .chat-input-row button:active {
-      transform: scale(0.96);
-    }
-
-    .chat-input-row button i {
-      font-size: 1rem;
-    }
-
-    /* مخرجات البوت */
-    .chat-output {
-      margin-top: 20px;
-      background: #0e141e;
-      border-radius: 24px;
-      padding: 18px 20px;
-      min-height: 80px;
-      border: 1px solid #26303f;
-      transition: all 0.2s;
-    }
-
-    .chat-output .response-placeholder {
-      color: #6b7a91;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .chat-output .response-placeholder i {
-      color: #f6d365;
-    }
-
-    .chat-output .bot-answer {
-      color: #eef3fc;
-      line-height: 1.8;
-      font-size: 1rem;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .chat-output .bot-answer strong {
-      color: #f6d365;
-    }
-
-    .loading-dots {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      color: #b6c4db;
-    }
-
-    .loading-dots span {
-      width: 8px;
-      height: 8px;
-      background: #f6d365;
-      border-radius: 50%;
-      display: inline-block;
-      animation: pulse 1.2s infinite;
-    }
-
-    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes pulse {
-      0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
-      30% { opacity: 1; transform: scale(1.2); }
-    }
-
-    /* تذييل بسيط */
-    .footer-note {
-      margin-top: 30px;
-      font-size: 0.8rem;
-      color: #4b5a72;
-      text-align: center;
-    }
-
-    /* توافق الجوال */
-    @media (max-width: 480px) {
-      .main-title {
-        font-size: 1.8rem;
-      }
-      .chat-input-row {
-        flex-wrap: wrap;
-        background: transparent;
-        padding: 0;
-        border: none;
-        gap: 8px;
-      }
-      .chat-input-row input {
-        background: #1e2430;
-        border-radius: 60px;
-        padding: 14px 18px;
-        border: 1px solid #2e3748;
-        width: 100%;
-      }
-      .chat-input-row button {
-        width: 100%;
-        justify-content: center;
-        padding: 14px;
-      }
-      .news-item h3 {
-        font-size: 1rem;
-      }
-    }
-  </style>
+        @media (max-width: 800px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .prices {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
+    <div class="container">
 
-    <!-- HEADER + البحث -->
-    <div class="header">
-      <h1 class="main-title"><i class="fas fa-futbol" style="margin-left: 10px; -webkit-text-fill-color: initial; color: #f6d365;"></i> أخبار السوق الكروي</h1>
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="ابحث عن أخبار أو لاعب... (واجهة فقط)">
-      </div>
-    </div>
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo">
+                <h1>دينار <span>|</span> Dinar</h1>
+            </div>
+            <div class="prices" id="livePrices">
+                <!-- سيتم ملؤها بواسطة JS -->
+            </div>
+            <a href="#" class="btn-all"><i class="fas fa-arrow-left"></i> عرض جميع العملات</a>
+        </header>
 
-    <!-- عرض الأخبار (نموذجية) -->
-    <div class="news-section">
-      <h2><i class="fas fa-newspaper" style="color: #fda085;"></i> آخر الأخبار</h2>
-      <div class="news-item">
-        <h3>⚽ صفقة مدوية: نجم الهلال ينتقل إلى الدوري الإنجليزي</h3>
-        <p>أعلن نادي الهلال السعودي عن رحيل نجمه الأول إلى أحد أندية البريميرليغ في صفقة تقدر بـ 80 مليون يورو.</p>
-        <div class="news-meta"><span>منذ ساعة</span><span><i class="far fa-eye"></i> 2.4k</span></div>
-      </div>
-      <div class="news-item">
-        <h3>🇪🇸 برشلونة يستهدف جناح الريدز في الميركاتو الصيفي</h3>
-        <p>وفقاً لمصادر مقربة، وضع برشلونة الجناح المصري محمد صلاح على رأس قائمة التعاقدات للموسم القادم.</p>
-        <div class="news-meta"><span>منذ ٣ ساعات</span><span><i class="far fa-eye"></i> 1.8k</span></div>
-      </div>
-      <div class="news-item">
-        <h3>🏆 جائزة الكرة الذهبية: قائمة المرشحين النهائية</h3>
-        <p>كشفت فرانس فوتبول عن القائمة المختصرة لجائزة الكرة الذهبية 2026 والتي تضم 5 نجوم كبار.</p>
-        <div class="news-meta"><span>منذ ٥ ساعات</span><span><i class="far fa-eye"></i> 3.1k</span></div>
-      </div>
-    </div>
+        <!-- GRID 2 COL -->
+        <div class="grid-2col">
 
-    <!-- بوت المحادثة Gemini -->
-    <div class="chatbot-wrapper">
-      <div class="chatbot-header">
-        <i class="fas fa-robot"></i>
-        <h2>بوت السوق الرياضي</h2>
-        <span>Gemini AI</span>
-      </div>
+            <!-- العمود الأيمن: نشرة + إحصائيات + رسم بياني -->
+            <div class="card">
+                <h3><i class="fas fa-envelope"></i> اشتراك في نشرتنا البريدية</h3>
+                <div class="newsletter">
+                    <input type="email" placeholder="أدخل بريدك الإلكتروني" />
+                    <button>اشتراك</button>
+                </div>
+                <div style="margin: 18px 0 6px;">
+                    <span class="social-icons">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="#"><i class="fab fa-discord"></i></a>
+                    </span>
+                </div>
 
-      <div class="chat-input-area">
-        <div class="chat-input-row">
-          <input type="text" id="userQuestion" placeholder="اسأل عن أخبار، انتقالات، أو أي سؤال رياضي...">
-          <button id="sendQuestionBtn"><i class="fas fa-paper-plane"></i> إرسال</button>
+                <hr style="border-color: #1e263b; margin: 20px 0;" />
+
+                <h3><i class="fas fa-chart-pie"></i> كل ما تحتاجه في عالم العملات الرقمية</h3>
+                <div class="stats-grid">
+                    <div class="stat-box"><div class="number">$2.45T</div><div class="label">إجمالي حجم السوق</div></div>
+                    <div class="stat-box"><div class="number">78,560</div><div class="label">إجمالي المستخدمين</div></div>
+                    <div class="stat-box"><div class="number">142</div><div class="label">إجمالي الاتصالات</div></div>
+                    <div class="stat-box"><div class="number">2,458</div><div class="label">إجمالي العملات</div></div>
+                </div>
+
+                <!-- رسم بياني (شموع محاكاة) -->
+                <div style="margin-top: 18px;">
+                    <h3 style="font-size:15px;"><i class="fas fa-chart-line"></i> حركة السوق (BTC)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="btcChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- العمود الأيسر: آخر الأخبار + الاتصالات الحالية + إدراج جديد -->
+            <div class="card">
+                <h3><i class="fas fa-newspaper"></i> آخر الأخبار</h3>
+                <div class="news-item">
+                    <span><span class="tag">AI</span> مشروع Binance: كفاءة الاستطلاع</span>
+                    <span class="date">مايو 2024</span>
+                </div>
+                <div class="news-item">
+                    <span><span class="tag">DeFi</span> إطلاق منصة جديدة للرهن</span>
+                    <span class="date">مايو 2024</span>
+                </div>
+                <div class="news-item">
+                    <span><span class="tag">BTC</span> تحليل: اتجاه صاعد قوي</span>
+                    <span class="date">أبريل 2024</span>
+                </div>
+
+                <hr style="border-color: #1e263b; margin: 20px 0;" />
+
+                <h3><i class="fas fa-link"></i> الاتصالات الحالية</h3>
+                <div class="ico-grid">
+                    <div class="ico-card"><div class="name">DeFi Plus</div><div class="chain">متعدد السلسل</div><div class="amount">$1.78M</div><span class="badge">جديد</span></div>
+                    <div class="ico-card"><div class="name">DeFi</div><div class="chain">متعدد السلسل</div><div class="amount">$4.00M</div></div>
+                    <div class="ico-card"><div class="name">Gaming</div><div class="chain">متعدد السلسل</div><div class="amount">$2.00M</div></div>
+                    <div class="ico-card"><div class="name">MetaGame</div><div class="chain">متعدد السلسل</div><div class="amount">$960K</div></div>
+                    <div class="ico-card"><div class="name">GreenChain</div><div class="chain">متعدد السلسل</div><div class="amount">$1.12M</div></div>
+                    <div class="ico-card"><div class="name">ERC-20</div><div class="chain">متعدد السلسل</div><div class="amount">37%</div></div>
+                </div>
+
+                <!-- إعلان إدراج جديد (مصدر مجاني) -->
+                <div style="margin-top: 18px; background: #1e263b; border-radius: 16px; padding: 12px 18px; border-right: 4px solid #f5b041;">
+                    <p style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-bullhorn" style="color: #f5b041;"></i>
+                        <strong>🆕 إدراج جديد:</strong> <span style="color: #f1c40f;">Asteroid Token</span> 
+                        <span style="background: #2a334a; padding: 2px 14px; border-radius: 30px; font-size: 12px;">IDO قادم</span>
+                    </p>
+                    <p style="font-size: 13px; color: #aab3d0; margin-top: 4px;">مصدر: CoinGecko • ١٥ مايو ٢٠٢٤</p>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <!-- منطقة عرض الإجابة -->
-      <div class="chat-output" id="chatOutput">
-        <div class="response-placeholder" id="placeholderMsg">
-          <i class="fas fa-comment-dots"></i> انتظر سؤالك الرياضي هنا...
+        <!-- مقالات مجانية عن حركة السوق -->
+        <div class="card" style="margin-top: 10px;">
+            <h3><i class="fas fa-feather-alt"></i> مقالات مجانية عن حركة السوق</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background: #1a2236; padding: 14px; border-radius: 16px;">
+                    <h4 style="color: #f5b041;">BTC يتجاوز 68K</h4>
+                    <p style="font-size: 13px; color: #bcc3dc;">تحليل فني: الاختراق قادم مع حجم تداول مرتفع.</p>
+                    <span style="color: #7a85a3; font-size: 12px;"><i class="far fa-clock"></i> ٢ ساعة</span>
+                </div>
+                <div style="background: #1a2236; padding: 14px; border-radius: 16px;">
+                    <h4 style="color: #f5b041;">Altcoin موسم</h4>
+                    <p style="font-size: 13px; color: #bcc3dc;">السيولة تتدفق إلى العملات البديلة، ننصح بالمتابعة.</p>
+                    <span style="color: #7a85a3; font-size: 12px;"><i class="far fa-clock"></i> ٥ ساعات</span>
+                </div>
+                <div style="background: #1a2236; padding: 14px; border-radius: 16px;">
+                    <h4 style="color: #f5b041;">تحليل السوق الأسبوعي</h4>
+                    <p style="font-size: 13px; color: #bcc3dc;">تقرير شامل عن حركة BTC و ETH وBNB.</p>
+                    <span style="color: #7a85a3; font-size: 12px;"><i class="far fa-clock"></i> ١ يوم</span>
+                </div>
+            </div>
         </div>
-        <div id="botAnswerContainer"></div>
-      </div>
+
+        <footer class="footer">
+            <p>جميع الحقوق محفوظة © 2024 دينار - منصة العملات الرقمية</p>
+            <p style="font-size: 12px; margin-top: 6px;">بيانات مجانية من CoinGecko API • تصميم احترافي</p>
+        </footer>
     </div>
 
-    <div class="footer-note">
-      <i class="fas fa-shield-alt" style="margin-left: 6px;"></i> يعمل بواسطة Google Gemini API
-    </div>
-  </div>
-
-  <script>
-    (function() {
-      // ============================================
-      // 1. ضع مفتاح API الخاص بك هنا
-      // ============================================
-      const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY";  // <-- استبدل بـ مفتاحك الحقيقي
-      // نموذج Gemini (يفضل استخدام أحدث نموذج)
-      const MODEL_NAME = "gemini-1.5-flash"; // أو gemini-1.5-pro
-
-      // عناصر DOM
-      const searchInput = document.getElementById('searchInput');
-      const userQuestionInput = document.getElementById('userQuestion');
-      const sendBtn = document.getElementById('sendQuestionBtn');
-      const chatOutput = document.getElementById('chatOutput');
-      const placeholderMsg = document.getElementById('placeholderMsg');
-      const botAnswerContainer = document.getElementById('botAnswerContainer');
-
-      // دالة مساعدة لإظهار حالة التحميل
-      function showLoading() {
-        placeholderMsg.style.display = 'none';
-        botAnswerContainer.innerHTML = `
-          <div class="loading-dots">
-            <span></span><span></span><span></span>
-            <span style="margin-right: 8px; color: #b6c4db;">يرسل إلى Gemini...</span>
-          </div>
-        `;
-      }
-
-      // دالة لعرض الإجابة من البوت
-      function displayBotAnswer(answerText) {
-        // إزالة أي تحميل أو رسائل سابقة
-        placeholderMsg.style.display = 'none';
-        // تنسيق الإجابة: إضافة بعض التنسيق البسيط (خط عريض للكلمات المفتاحية) اختياري
-        const formatted = answerText
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\n/g, '<br>');
-        botAnswerContainer.innerHTML = `<div class="bot-answer">${formatted}</div>`;
-      }
-
-      // دالة عرض خطأ بسيط
-      function showError(message) {
-        placeholderMsg.style.display = 'none';
-        botAnswerContainer.innerHTML = `
-          <div class="bot-answer" style="color: #fda085;">
-            <i class="fas fa-exclamation-circle"></i> ${message}
-          </div>
-        `;
-      }
-
-      // الدالة الأساسية للاتصال بـ Gemini API
-      async function askGemini(question) {
-        // إذا لم يكن المفتاح صحيحاً
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
-          showError('⚠️ يرجى إضافة مفتاح Gemini API في الكود (انظر الشرح).');
-          return;
-        }
-
-        if (!question.trim()) {
-          showError('الرجاء كتابة سؤال رياضي.');
-          return;
-        }
-
-        // عرض حالة التحميل
-        showLoading();
-
-        try {
-          // بناء جسم الطلب حسب وثائق Gemini API (v1)
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
-
-          const payload = {
-            contents: [
-              {
-                role: "user",
-                parts: [
-                  { text: `أنت بوت رياضي خبير في كرة القدم والأخبار الرياضية. أجب على السؤال التالي بشكل مختصر ومفيد: ${question}` }
-                ]
-              }
-            ],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 400,
-            }
-          };
-
-          const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-          });
-
-          // معالجة الأخطاء
-          if (!response.ok) {
-            let errorMsg = `خطأ في الاتصال (${response.status})`;
+    <script>
+        // ========== 1. أسعار العملات الحية (CoinGecko مجاني) ==========
+        async function fetchPrices() {
             try {
-              const errData = await response.json();
-              if (errData.error && errData.error.message) {
-                errorMsg += `: ${errData.error.message}`;
-              }
-            } catch (_) {}
-            throw new Error(errorMsg);
-          }
+                const ids = 'bitcoin,ethereum,binancecoin,solana,ripple';
+                const url =
+                    `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
+                const res = await fetch(url);
+                const data = await res.json();
 
-          const data = await response.json();
+                const map = {
+                    bitcoin: { symbol: 'BTC', name: 'BTC' },
+                    ethereum: { symbol: 'ETH', name: 'ETH' },
+                    binancecoin: { symbol: 'BNB', name: 'BNB' },
+                    solana: { symbol: 'SOL', name: 'SOL' },
+                    ripple: { symbol: 'XRP', name: 'XRP' }
+                };
 
-          // استخراج النص من الرد
-          if (data.candidates && data.candidates.length > 0) {
-            const candidate = data.candidates[0];
-            if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-              const answerText = candidate.content.parts[0].text || 'لم أتلقَ إجابة. حاول مرة أخرى.';
-              displayBotAnswer(answerText);
-            } else {
-              showError('لم يتم العثور على محتوى في الرد.');
+                let html = '';
+                for (const [key, coin] of Object.entries(map)) {
+                    const info = data[key];
+                    if (info) {
+                        const price = info.usd.toFixed(2);
+                        const change = info.usd_24h_change.toFixed(2);
+                        const cls = change >= 0 ? 'green' : 'red';
+                        const arrow = change >= 0 ? '▲' : '▼';
+                        html += `
+                            <div class="price-item">
+                                <span class="coin">${coin.symbol}</span>
+                                $${price} 
+                                <span class="${cls}">${arrow} ${Math.abs(change)}%</span>
+                            </div>
+                        `;
+                    }
+                }
+                document.getElementById('livePrices').innerHTML = html;
+            } catch (e) {
+                console.warn('API غير متاحة، نعرض بيانات افتراضية');
+                // بيانات احتياطية
+                document.getElementById('livePrices').innerHTML = `
+                    <div class="price-item"><span class="coin">BTC</span> $67,842.21 <span class="green">▲ 1.35%</span></div>
+                    <div class="price-item"><span class="coin">ETH</span> $3,512.18 <span class="green">▲ 2.41%</span></div>
+                    <div class="price-item"><span class="coin">BNB</span> $592.72 <span class="green">▲ 0.98%</span></div>
+                    <div class="price-item"><span class="coin">SOL</span> $166.35 <span class="red">▼ 1.23%</span></div>
+                    <div class="price-item"><span class="coin">XRP</span> $0.5221 <span class="green">▲ 0.65%</span></div>
+                `;
             }
-          } else {
-            showError('الرد من Gemini لا يحتوي على مرشحين (candidates).');
-          }
-
-        } catch (error) {
-          console.error('Gemini API error:', error);
-          showError(`❌ فشل الاتصال: ${error.message || 'يرجى التحقق من المفتاح أو الاتصال.'}`);
         }
-      }
+        fetchPrices();
 
-      // مستمعات الأحداث
-      sendBtn.addEventListener('click', function() {
-        const question = userQuestionInput.value.trim();
-        if (question) {
-          askGemini(question);
-        } else {
-          // تنبيه بسيط
-          placeholderMsg.style.display = 'flex';
-          placeholderMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> اكتب سؤالاً رياضياً أولاً.';
-          botAnswerContainer.innerHTML = '';
-        }
-      });
+        // ========== 2. رسم بياني (شموع محاكاة باستخدام Chart.js) ==========
+        const ctx = document.getElementById('btcChart').getContext('2d');
 
-      // إرسال بالضغط على Enter في حقل السؤال
-      userQuestionInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          sendBtn.click();
-        }
-      });
+        // بيانات محاكاة لشكل يشبه الشموع (استخدمنا خط مع نقاط لإعطاء إحساس)
+        const labels = ['أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر'];
+        const dataPoints = [62000, 64500, 63000, 67000, 68500, 66000, 67842];
 
-      // (البحث في الأعلى مجرد واجهة - لا وظيفة حقيقية)
-      searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          alert(`🔍 تم البحث عن: "${searchInput.value}" (واجهة فقط)`);
-        }
-      });
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'BTC/USD',
+                    data: dataPoints,
+                    borderColor: '#f5b041',
+                    backgroundColor: 'rgba(245, 176, 65, 0.05)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#f5b041',
+                    pointRadius: 4,
+                    tension: 0.2,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#1e263b' },
+                        ticks: { color: '#7a85a3' }
+                    },
+                    y: {
+                        grid: { color: '#1e263b' },
+                        ticks: { color: '#7a85a3' }
+                    }
+                }
+            }
+        });
 
-      // رسالة ترحيب في البداية
-      setTimeout(() => {
-        if (placeholderMsg) {
-          placeholderMsg.innerHTML = '<i class="fas fa-futbol"></i> اسأل البوت عن أخبار الانتقالات، المباريات، أو أي سؤال رياضي!';
-        }
-      }, 300);
-    })();
-  </script>
+        // ========== 3. عرض كمية التداول وقيمة العملة (إضافي) ==========
+        // نضيف معلومات إضافية أسفل الرسم البياني (حجم تداول)
+        const extraInfo = document.createElement('div');
+        extraInfo.style.cssText = `
+            display: flex; justify-content: space-between; flex-wrap: wrap;
+            background: #1a2236; padding: 12px 18px; border-radius: 16px;
+            margin-top: 15px; font-size: 14px;
+        `;
+        extraInfo.innerHTML = `
+            <span><strong>💰 قيمة BTC:</strong> $67,842.21</span>
+            <span><strong>📊 حجم تداول 24h:</strong> $28.4B</span>
+            <span><strong>🔄 كمية التداول:</strong> 412,500 BTC</span>
+        `;
+        // نضيفه بعد الرسم البياني
+        const chartWrapper = document.querySelector('.chart-wrapper');
+        chartWrapper.parentNode.insertBefore(extraInfo, chartWrapper.nextSibling);
+
+        // ========== 4. مصدر مجاني لإعلان الإدراج الجديد (تم إضافته في HTML) ==========
+
+        // ========== 5. مقالات مجانية (موجودة في HTML) ==========
+
+        console.log('✅ موقع دينار جاهز مع رسم بياني وأسعار حية وإدراج جديد!');
+    </script>
+
 </body>
 </html>
