@@ -1,526 +1,452 @@
+// ============================================================
+// 🔑 ضع مفتاحك المجاني من football-data.org هنا
+// ============================================================
+const API_KEY = 'bd01eb568cc742e29ef9d187db92d334'; // ⬅️ استبدل هذا بمفتاحك
+
+// ============================================================
+// 1. التبديل بين التبويبات
+// ============================================================
+const tabs = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.tab-content');
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+});
+
+// ============================================================
+// 2. جلب الأخبار عبر RSS مجاني
+// ============================================================
+async function fetchNews() {
+    const container = document.getElementById('news-container');
+    try {
+        const rssUrl = 'https://www.fcbarcelonanoticias.com/rss';
+        const proxy = 'https://api.rss2json.com/v1/api.json?rss_url=';
+        const response = await fetch(proxy + encodeURIComponent(rssUrl));
+        const data = await response.json();
+
+        if (data.status === 'ok' && data.items.length > 0) {
+            container.innerHTML = data.items.slice(0, 10).map(item => `
+                <div class="news-card">
+                    <h3>${item.title}</h3>
+                    <p>${item.description.replace(/<[^>]+>/g, '').slice(0, 160)}...</p>
+                    <small>📅 ${new Date(item.pubDate).toLocaleDateString('ar-EG')}</small>
+                    <br><a href="${item.link}" target="_blank">📖 اقرأ المزيد</a>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '⚠️ لا توجد أخبار حالياً. حاول لاحقاً.';
+        }
+    } catch (error) {
+        container.innerHTML = '❌ تعذر تحميل الأخبار. تأكد من اتصال الإنترنت.';
+        console.error('News error:', error);
+    }
+}
+
+// ============================================================
+// 3. جلب الانتقالات (بيانات ثابتة + قابل للتحديث)
+// ============================================================
+async function fetchTransfers() {
+    const container = document.getElementById('transfers-container');
+    try {
+        // يمكنك تحديث هذه القائمة يدوياً أو جلبها من RSS آخر
+        const transfers = [
+            { player: 'جوليس كوندي', from: 'إشبيلية', to: 'برشلونة', status: '✅ تم التعاقد' },
+            { player: 'رافينيا', from: 'ليدز يونايتد', to: 'برشلونة', status: '✅ تم التعاقد' },
+            { player: 'روبرت ليفاندوفسكي', from: 'بايرن ميونخ', to: 'برشلونة', status: '✅ تم التعاقد' },
+            { player: 'فرانك كيسيي', from: 'ميلان', to: 'برشلونة', status: '✅ تم التعاقد' },
+            { player: 'أندرياس كريستنسن', from: 'تشيلسي', to: 'برشلونة', status: '✅ تم التعاقد' },
+            { player: 'عثمان ديمبيلي', from: 'برشلونة', to: 'باريس سان جيرمان', status: '❌ رحل' },
+            { player: 'ميمفيس ديباي', from: 'برشلونة', to: 'أتلتيكو مدريد', status: '❌ رحل' },
+        ];
+        container.innerHTML = transfers.map(t => `
+            <div class="transfer-card">
+                <strong style="font-size:1.1rem;">${t.player}</strong>
+                <span style="color:#555;">من</span>
+                <span style="color:#003366; font-weight:600;">${t.from}</span>
+                <span style="color:#555;">إلى</span>
+                <span style="color:#a50044; font-weight:600;">${t.to}</span>
+                <span style="background:${t.status.includes('✅') ? '#27ae60' : '#e74c3c'}; 
+                     color:white; padding:4px 16px; border-radius:50px; font-size:0.85rem; 
+                     display:inline-block; margin-top:6px;">
+                    ${t.status}
+                </span>
+            </div>
+        `).join('');
+    } catch (error) {
+        container.innerHTML = '❌ تعذر تحميل الانتقالات.';
+        console.error('Transfers error:', error);
+    }
+}
+
+// ============================================================
+// 4. جلب الترتيب عبر football-data.org
+// ============================================================
+async function fetchStandings() {
+    const container = document.getElementById('standings-container');
+    try {
+        const response = await fetch('https://api.football-data.org/v4/competitions/PD/standings', {
+            headers: { 'X-Auth-Token': API_KEY }
+        });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        if (data.standings && data.standings[0]?.table) {
+            const table = data.standings[0].table;
+            let rows = table.map(team => `
+                <tr class="${team.team.name.includes('Barcelona') ? 'barca-row' : ''}">
+                    <td>${team.position}</td>
+                    <td style="text-align:right; font-weight:${team.team.name.includes('Barcelona') ? '700' : '400'};">${team.team.name}</td>
+                    <td>${team.playedGames}</td>
+                    <td>${team.won}</td>
+                    <td>${team.draw}</td>
+                    <td>${team.lost}</td>
+                    <td>${team.goalsFor}</td>
+                    <td>${team.goalsAgainst}</td>
+                    <td><strong style="font-size:1.1rem; color:#003366;">${team.points}</strong></td>
+                </tr>
+            `).join('');
+
+            container.innerHTML = `
+                <div style="overflow-x:auto;">
+                    <table class="standings-table">
+                        <thead><tr>
+                            <th>#</th><th>النادي</th><th>لعب</th><th>فوز</th>
+                            <th>تعادل</th><th>خسارة</th><th>له</th><th>عليه</th><th>نقاط</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+                <p style="margin-top:18px; color:#888; font-size:0.9rem;">🔵 صف برشلونة باللون الأزرق الفاتح</p>
+                <p style="color:#aaa; font-size:0.8rem;">📊 آخر تحديث: ${new Date().toLocaleString('ar-EG')}</p>
+            `;
+        } else {
+            container.innerHTML = '⚠️ لا توجد بيانات ترتيب حالياً.';
+        }
+    } catch (error) {
+        container.innerHTML = `❌ تعذر تحميل الترتيب. ${error.message.includes('429') ? 'تجاوزت حد الطلبات، انتظر دقيقة.' : 'تأكد من المفتاح.'}`;
+        console.error('Standings error:', error);
+    }
+}
+
+// ============================================================
+// 5. جلب المباريات القادمة
+// ============================================================
+async function fetchMatches() {
+    const container = document.getElementById('matches-container');
+    try {
+        const response = await fetch('https://api.football-data.org/v4/teams/81/matches?status=SCHEDULED&limit=8', {
+            headers: { 'X-Auth-Token': API_KEY }
+        });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        if (data.matches && data.matches.length > 0) {
+            container.innerHTML = data.matches.map(m => `
+                <div class="match-card">
+                    <span class="teams">${m.homeTeam.name} 🆚 ${m.awayTeam.name}</span>
+                    <span class="date">📅 ${new Date(m.utcDate).toLocaleDateString('ar-EG')} 
+                          ⏰ ${new Date(m.utcDate).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <span class="competition">${m.competition.name}</span>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '⚠️ لا توجد مباريات قادمة مجدولة حالياً.';
+        }
+    } catch (error) {
+        container.innerHTML = `❌ تعذر تحميل المباريات. ${error.message.includes('429') ? 'تجاوزت حد الطلبات، انتظر دقيقة.' : ''}`;
+        console.error('Matches error:', error);
+    }
+}
+
+// ============================================================
+// 6. تشغيل الكل عند تحميل الصفحة
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    fetchNews();
+    fetchTransfers();
+    fetchStandings();
+    fetchMatches();
+
+    // تحديث الترتيب والمباريات كل 5 دقائق (تجنب تجاوز الحد)
+    setInterval(() => {
+        fetchStandings();
+        fetchMatches();
+    }, 300000);
+});
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #f0f2f5;
+    color: #1a1a1a;
+}
+
+header {
+    background: linear-gradient(135deg, #003366, #a50044);
+    color: white;
+    text-align: center;
+    padding: 35px 20px;
+    border-bottom: 5px solid #ffd700;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+header h1 {
+    font-size: 3rem;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+header p {
+    font-size: 1.3rem;
+    opacity: 0.9;
+    margin-top: 8px;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    background: white;
+    padding: 18px 20px;
+    flex-wrap: wrap;
+    border-bottom: 3px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.tab-btn {
+    background: #e8ecf1;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    font-weight: 600;
+    color: #333;
+}
+.tab-btn:hover {
+    background: #d0d7e0;
+    transform: translateY(-2px);
+}
+.tab-btn.active {
+    background: #003366;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,51,102,0.4);
+}
+
+main {
+    max-width: 1100px;
+    margin: 35px auto;
+    padding: 0 20px;
+}
+
+.tab-content {
+    display: none;
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+    animation: fadeIn 0.4s ease;
+}
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    color: #003366;
+    margin-bottom: 25px;
+    border-right: 6px solid #a50044;
+    padding-right: 18px;
+    font-size: 1.8rem;
+}
+
+/* بطاقات الأخبار */
+.news-card, .transfer-card {
+    background: #f8f9fb;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    border-right: 5px solid #a50044;
+    transition: 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.news-card:hover, .transfer-card:hover {
+    background: #f0f2f7;
+    transform: translateX(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.news-card h3 {
+    color: #003366;
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+}
+.news-card p {
+    color: #555;
+    line-height: 1.6;
+}
+.news-card small {
+    color: #999;
+    display: block;
+    margin-top: 10px;
+    font-size: 0.85rem;
+}
+.news-card a {
+    color: #a50044;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.news-card a:hover {
+    text-decoration: underline;
+}
+
+/* جدول الترتيب */
+.standings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+.standings-table th {
+    background: #003366;
+    color: white;
+    padding: 14px 10px;
+    text-align: center;
+}
+.standings-table td {
+    padding: 13px 10px;
+    text-align: center;
+    border-bottom: 1px solid #e8ecf1;
+}
+.standings-table tr:hover {
+    background: #f5f7fa;
+}
+.barca-row {
+    background: #dce8f5 !important;
+    font-weight: 700;
+    border-right: 4px solid #a50044;
+}
+
+/* المباريات */
+.match-card {
+    background: #f8f9fb;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    transition: 0.25s ease;
+    border-left: 4px solid #003366;
+}
+.match-card:hover {
+    background: #f0f2f7;
+    transform: scale(1.01);
+}
+.match-card .teams {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+.match-card .date {
+    color: #666;
+    font-size: 0.95rem;
+}
+.match-card .competition {
+    background: #003366;
+    color: white;
+    padding: 5px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+footer {
+    text-align: center;
+    padding: 30px;
+    background: #1a1a1a;
+    color: #aaa;
+    margin-top: 50px;
+    border-top: 4px solid #a50044;
+}
+
+/* استجابة الجوال */
+@media (max-width: 650px) {
+    header h1 { font-size: 2.2rem; }
+    .tab-btn { padding: 8px 18px; font-size: 0.85rem; }
+    .match-card { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .tab-content { padding: 18px; }
+    h2 { font-size: 1.4rem; }
+    .standings-table { font-size: 0.75rem; }
+    .standings-table th, .standings-table td { padding: 8px 4px; }
+}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>دينار - منصة العملات الرقمية</title>
-    <!-- Chart.js مجاني -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
-    </script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: #0b0e1a;
-            color: #e0e4f0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            background: #141a2b;
-            padding: 15px 25px;
-            border-radius: 24px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-        }
-
-        .logo h1 {
-            font-size: 28px;
-            color: #f5b041;
-            letter-spacing: 1px;
-        }
-
-        .logo span {
-            color: #fff;
-            font-weight: 300;
-        }
-
-        .prices {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
-            font-size: 14px;
-        }
-
-        .price-item {
-            background: #1e263b;
-            padding: 6px 14px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .price-item .coin {
-            font-weight: 600;
-        }
-
-        .green {
-            color: #2ecc71;
-        }
-        .red {
-            color: #e74c3c;
-        }
-
-        .btn-all {
-            background: #2a334a;
-            padding: 8px 18px;
-            border-radius: 30px;
-            color: #fff;
-            text-decoration: none;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-        .btn-all:hover {
-            background: #3a455f;
-        }
-
-        /* Grid */
-        .grid-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: #141a2b;
-            border-radius: 24px;
-            padding: 22px 25px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-            transition: 0.2s;
-        }
-
-        .card h3 {
-            font-size: 18px;
-            margin-bottom: 16px;
-            color: #f5b041;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card h3 i {
-            color: #f1c40f;
-        }
-
-        /* newsletter */
-        .newsletter {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-        }
-        .newsletter input {
-            flex: 1;
-            padding: 12px 18px;
-            border-radius: 40px;
-            border: none;
-            background: #1e263b;
-            color: #fff;
-            font-size: 14px;
-            min-width: 180px;
-        }
-        .newsletter input::placeholder {
-            color: #7a85a3;
-        }
-        .newsletter button {
-            background: #f5b041;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 40px;
-            font-weight: 600;
-            color: #0b0e1a;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .newsletter button:hover {
-            background: #e6a035;
-        }
-
-        .social-icons a {
-            color: #aab3d0;
-            margin-left: 12px;
-            font-size: 20px;
-            transition: 0.3s;
-        }
-        .social-icons a:hover {
-            color: #f5b041;
-        }
-
-        /* stats */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
-        }
-        .stat-box {
-            background: #1e263b;
-            padding: 14px 10px;
-            border-radius: 16px;
-            text-align: center;
-        }
-        .stat-box .number {
-            font-size: 22px;
-            font-weight: 700;
-            color: #fff;
-        }
-        .stat-box .label {
-            font-size: 12px;
-            color: #8d98b9;
-            margin-top: 4px;
-        }
-
-        /* latest news */
-        .news-item {
-            background: #1a2236;
-            padding: 14px 18px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .news-item .tag {
-            background: #2a334a;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #f5b041;
-        }
-        .news-item .date {
-            color: #7a85a3;
-            font-size: 13px;
-        }
-
-        /* ICO / إدراج جديد */
-        .ico-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-top: 10px;
-        }
-        .ico-card {
-            background: #1e263b;
-            padding: 14px 12px;
-            border-radius: 16px;
-            text-align: center;
-        }
-        .ico-card .name {
-            font-weight: 600;
-        }
-        .ico-card .chain {
-            font-size: 12px;
-            color: #8d98b9;
-        }
-        .ico-card .amount {
-            color: #2ecc71;
-            font-weight: 600;
-        }
-        .ico-card .badge {
-            background: #2a334a;
-            padding: 2px 12px;
-            border-radius: 30px;
-            font-size: 11px;
-            color: #f5b041;
-            display: inline-block;
-            margin-top: 4px;
-        }
-
-        /* chart wrapper */
-        .chart-wrapper {
-            margin-top: 20px;
-            background: #0f1525;
-            padding: 15px;
-            border-radius: 20px;
-            height: 200px;
-            position: relative;
-        }
-        .chart-wrapper canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        /* footer */
-        .footer {
-            text-align: center;
-            color: #5a6582;
-            font-size: 14px;
-            margin-top: 40px;
-            border-top: 1px solid #1e263b;
-            padding-top: 25px;
-        }
-
-        @media (max-width: 800px) {
-            .grid-2col {
-                grid-template-columns: 1fr;
-            }
-            .header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .prices {
-                justify-content: center;
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>برشلونة - الأخبار والانتقالات</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
 
-        <!-- HEADER -->
-        <header class="header">
-            <div class="logo">
-                <h1>دينار <span>|</span> Dinar</h1>
-            </div>
-            <div class="prices" id="livePrices">
-                <!-- سيتم ملؤها بواسطة JS -->
-            </div>
-            <a href="#" class="btn-all"><i class="fas fa-arrow-left"></i> عرض جميع العملات</a>
-        </header>
+    <header>
+        <h1>🔵🔴 برشلونة</h1>
+        <p>آخر الأخبار، الانتقالات، والترتيب</p>
+    </header>
 
-        <!-- GRID 2 COL -->
-        <div class="grid-2col">
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="news">📰 الأخبار</button>
+        <button class="tab-btn" data-tab="transfers">🔄 الانتقالات</button>
+        <button class="tab-btn" data-tab="standings">🏆 الترتيب</button>
+        <button class="tab-btn" data-tab="matches">📅 المباريات</button>
+    </nav>
 
-            <!-- العمود الأيمن: نشرة + إحصائيات + رسم بياني -->
-            <div class="card">
-                <h3><i class="fas fa-envelope"></i> اشتراك في نشرتنا البريدية</h3>
-                <div class="newsletter">
-                    <input type="email" placeholder="أدخل بريدك الإلكتروني" />
-                    <button>اشتراك</button>
-                </div>
-                <div style="margin: 18px 0 6px;">
-                    <span class="social-icons">
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-telegram"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                        <a href="#"><i class="fab fa-discord"></i></a>
-                    </span>
-                </div>
+    <main>
+        <section id="news" class="tab-content active">
+            <h2>📰 آخر أخبار برشلونة</h2>
+            <div id="news-container">⏳ جاري التحميل...</div>
+        </section>
 
-                <hr style="border-color: #1e263b; margin: 20px 0;" />
+        <section id="transfers" class="tab-content">
+            <h2>🔄 سوق الانتقالات</h2>
+            <div id="transfers-container">⏳ جاري التحميل...</div>
+        </section>
 
-                <h3><i class="fas fa-chart-pie"></i> كل ما تحتاجه في عالم العملات الرقمية</h3>
-                <div class="stats-grid">
-                    <div class="stat-box"><div class="number">$2.45T</div><div class="label">إجمالي حجم السوق</div></div>
-                    <div class="stat-box"><div class="number">78,560</div><div class="label">إجمالي المستخدمين</div></div>
-                    <div class="stat-box"><div class="number">142</div><div class="label">إجمالي الاتصالات</div></div>
-                    <div class="stat-box"><div class="number">2,458</div><div class="label">إجمالي العملات</div></div>
-                </div>
+        <section id="standings" class="tab-content">
+            <h2>🏆 ترتيب الدوري الإسباني</h2>
+            <div id="standings-container">⏳ جاري التحميل...</div>
+        </section>
 
-                <!-- رسم بياني (شموع محاكاة) -->
-                <div style="margin-top: 18px;">
-                    <h3 style="font-size:15px;"><i class="fas fa-chart-line"></i> حركة السوق (BTC)</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="btcChart"></canvas>
-                    </div>
-                </div>
-            </div>
+        <section id="matches" class="tab-content">
+            <h2>📅 مباريات برشلونة القادمة</h2>
+            <div id="matches-container">⏳ جاري التحميل...</div>
+        </section>
+    </main>
 
-            <!-- العمود الأيسر: آخر الأخبار + الاتصالات الحالية + إدراج جديد -->
-            <div class="card">
-                <h3><i class="fas fa-newspaper"></i> آخر الأخبار</h3>
-                <div class="news-item">
-                    <span><span class="tag">AI</span> مشروع Binance: كفاءة الاستطلاع</span>
-                    <span class="date">مايو 2024</span>
-                </div>
-                <div class="news-item">
-                    <span><span class="tag">DeFi</span> إطلاق منصة جديدة للرهن</span>
-                    <span class="date">مايو 2024</span>
-                </div>
-                <div class="news-item">
-                    <span><span class="tag">BTC</span> تحليل: اتجاه صاعد قوي</span>
-                    <span class="date">أبريل 2024</span>
-                </div>
+    <footer>
+        <p>جميع الحقوق محفوظة © 2026 | مصادر مجانية</p>
+    </footer>
 
-                <hr style="border-color: #1e263b; margin: 20px 0;" />
-
-                <h3><i class="fas fa-link"></i> الاتصالات الحالية</h3>
-                <div class="ico-grid">
-                    <div class="ico-card"><div class="name">DeFi Plus</div><div class="chain">متعدد السلسل</div><div class="amount">$1.78M</div><span class="badge">جديد</span></div>
-                    <div class="ico-card"><div class="name">DeFi</div><div class="chain">متعدد السلسل</div><div class="amount">$4.00M</div></div>
-                    <div class="ico-card"><div class="name">Gaming</div><div class="chain">متعدد السلسل</div><div class="amount">$2.00M</div></div>
-                    <div class="ico-card"><div class="name">MetaGame</div><div class="chain">متعدد السلسل</div><div class="amount">$960K</div></div>
-                    <div class="ico-card"><div class="name">GreenChain</div><div class="chain">متعدد السلسل</div><div class="amount">$1.12M</div></div>
-                    <div class="ico-card"><div class="name">ERC-20</div><div class="chain">متعدد السلسل</div><div class="amount">37%</div></div>
-                </div>
-
-                <!-- إعلان إدراج جديد (مصدر مجاني) -->
-                <div style="margin-top: 18px; background: #1e263b; border-radius: 16px; padding: 12px 18px; border-right: 4px solid #f5b041;">
-                    <p style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-bullhorn" style="color: #f5b041;"></i>
-                        <strong>🆕 إدراج جديد:</strong> <span style="color: #f1c40f;">Asteroid Token</span> 
-                        <span style="background: #2a334a; padding: 2px 14px; border-radius: 30px; font-size: 12px;">IDO قادم</span>
-                    </p>
-                    <p style="font-size: 13px; color: #aab3d0; margin-top: 4px;">مصدر: CoinGecko • ١٥ مايو ٢٠٢٤</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- مقالات مجانية عن حركة السوق -->
-        <div class="card" style="margin-top: 10px;">
-            <h3><i class="fas fa-feather-alt"></i> مقالات مجانية عن حركة السوق</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                <div style="background: #1a2236; padding: 14px; border-radius: 16px;">
-                    <h4 style="color: #f5b041;">BTC يتجاوز 68K</h4>
-                    <p style="font-size: 13px; color: #bcc3dc;">تحليل فني: الاختراق قادم مع حجم تداول مرتفع.</p>
-                    <span style="color: #7a85a3; font-size: 12px;"><i class="far fa-clock"></i> ٢ ساعة</span>
-                </div>
-                <div style="background: #1a2236; padding: 14px; border-radius: 16px;">
-                    <h4 style="color: #f5b041;">Altcoin موسم</h4>
-                    <p style="font-size: 13px; color: #bcc3dc;">السيولة تتدفق إلى العملات البديلة، ننصح بالمتابعة.</p>
-                    <span style="color: #7a85a3; font-size: 12px;"><i class="far fa-clock"></i> ٥ ساعات</span>
-                </div>
-                <div style="background: #1a2236; padding: 14px; border-radius: 16px;">
-                    <h4 style="color: #f5b041;">تحليل السوق الأسبوعي</h4>
-                    <p style="font-size: 13px; color: #bcc3dc;">تقرير شامل عن حركة BTC و ETH وBNB.</p>
-                    <span style="color: #7a85a3; font-size: 12px;"><i class="far fa-clock"></i> ١ يوم</span>
-                </div>
-            </div>
-        </div>
-
-        <footer class="footer">
-            <p>جميع الحقوق محفوظة © 2024 دينار - منصة العملات الرقمية</p>
-            <p style="font-size: 12px; margin-top: 6px;">بيانات مجانية من CoinGecko API • تصميم احترافي</p>
-        </footer>
-    </div>
-
-    <script>
-        // ========== 1. أسعار العملات الحية (CoinGecko مجاني) ==========
-        async function fetchPrices() {
-            try {
-                const ids = 'bitcoin,ethereum,binancecoin,solana,ripple';
-                const url =
-                    `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
-                const res = await fetch(url);
-                const data = await res.json();
-
-                const map = {
-                    bitcoin: { symbol: 'BTC', name: 'BTC' },
-                    ethereum: { symbol: 'ETH', name: 'ETH' },
-                    binancecoin: { symbol: 'BNB', name: 'BNB' },
-                    solana: { symbol: 'SOL', name: 'SOL' },
-                    ripple: { symbol: 'XRP', name: 'XRP' }
-                };
-
-                let html = '';
-                for (const [key, coin] of Object.entries(map)) {
-                    const info = data[key];
-                    if (info) {
-                        const price = info.usd.toFixed(2);
-                        const change = info.usd_24h_change.toFixed(2);
-                        const cls = change >= 0 ? 'green' : 'red';
-                        const arrow = change >= 0 ? '▲' : '▼';
-                        html += `
-                            <div class="price-item">
-                                <span class="coin">${coin.symbol}</span>
-                                $${price} 
-                                <span class="${cls}">${arrow} ${Math.abs(change)}%</span>
-                            </div>
-                        `;
-                    }
-                }
-                document.getElementById('livePrices').innerHTML = html;
-            } catch (e) {
-                console.warn('API غير متاحة، نعرض بيانات افتراضية');
-                // بيانات احتياطية
-                document.getElementById('livePrices').innerHTML = `
-                    <div class="price-item"><span class="coin">BTC</span> $67,842.21 <span class="green">▲ 1.35%</span></div>
-                    <div class="price-item"><span class="coin">ETH</span> $3,512.18 <span class="green">▲ 2.41%</span></div>
-                    <div class="price-item"><span class="coin">BNB</span> $592.72 <span class="green">▲ 0.98%</span></div>
-                    <div class="price-item"><span class="coin">SOL</span> $166.35 <span class="red">▼ 1.23%</span></div>
-                    <div class="price-item"><span class="coin">XRP</span> $0.5221 <span class="green">▲ 0.65%</span></div>
-                `;
-            }
-        }
-        fetchPrices();
-
-        // ========== 2. رسم بياني (شموع محاكاة باستخدام Chart.js) ==========
-        const ctx = document.getElementById('btcChart').getContext('2d');
-
-        // بيانات محاكاة لشكل يشبه الشموع (استخدمنا خط مع نقاط لإعطاء إحساس)
-        const labels = ['أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر'];
-        const dataPoints = [62000, 64500, 63000, 67000, 68500, 66000, 67842];
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'BTC/USD',
-                    data: dataPoints,
-                    borderColor: '#f5b041',
-                    backgroundColor: 'rgba(245, 176, 65, 0.05)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#f5b041',
-                    pointRadius: 4,
-                    tension: 0.2,
-                    fill: true,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: true }
-                },
-                scales: {
-                    x: {
-                        grid: { color: '#1e263b' },
-                        ticks: { color: '#7a85a3' }
-                    },
-                    y: {
-                        grid: { color: '#1e263b' },
-                        ticks: { color: '#7a85a3' }
-                    }
-                }
-            }
-        });
-
-        // ========== 3. عرض كمية التداول وقيمة العملة (إضافي) ==========
-        // نضيف معلومات إضافية أسفل الرسم البياني (حجم تداول)
-        const extraInfo = document.createElement('div');
-        extraInfo.style.cssText = `
-            display: flex; justify-content: space-between; flex-wrap: wrap;
-            background: #1a2236; padding: 12px 18px; border-radius: 16px;
-            margin-top: 15px; font-size: 14px;
-        `;
-        extraInfo.innerHTML = `
-            <span><strong>💰 قيمة BTC:</strong> $67,842.21</span>
-            <span><strong>📊 حجم تداول 24h:</strong> $28.4B</span>
-            <span><strong>🔄 كمية التداول:</strong> 412,500 BTC</span>
-        `;
-        // نضيفه بعد الرسم البياني
-        const chartWrapper = document.querySelector('.chart-wrapper');
-        chartWrapper.parentNode.insertBefore(extraInfo, chartWrapper.nextSibling);
-
-        // ========== 4. مصدر مجاني لإعلان الإدراج الجديد (تم إضافته في HTML) ==========
-
-        // ========== 5. مقالات مجانية (موجودة في HTML) ==========
-
-        console.log('✅ موقع دينار جاهز مع رسم بياني وأسعار حية وإدراج جديد!');
-    </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
